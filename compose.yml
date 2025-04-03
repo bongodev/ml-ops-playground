@@ -1,0 +1,25 @@
+services:
+  mlflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.mlflow
+    container_name: mlflow-server
+    ports:
+      - 8080:8080
+    volumes:
+      - ./.mlflow-data:/mlflow
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  training:
+    build:
+      context: .
+      dockerfile: Dockerfile.training
+    container_name: ml-training
+    depends_on:
+      - mlflow
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:8080
